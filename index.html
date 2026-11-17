@@ -36,7 +36,7 @@ let M=ld("hm",{}),R=ld("hr",{});const sv=(k,v)=>{try{localStorage.setItem(k,JSON
 N.forEach((n,i)=>$("sr").add(new Option((i+1)+". "+n,i+1)));
 const rw=()=>$("rw").value,sr=()=>+$("sr").value,A=()=>(D[rw()]||{})[sr()]||[],K=i=>rw()+":"+sr()+":"+(i+1);
 async function load(){$("a").textContent="جارٍ التحميل...";
-if(!D[rw()]){try{D[rw()]=await(await fetch("data/"+rw()+".json")).json()}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
+if(!D[rw()]){try{D[rw()]=await(await fetch("data/data/"+rw()+".json")).json()}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
 function draw(){const a=A();let d=0,h="";a.forEach((t,i)=>{const m=M[K(i)];if(m)d++;h+=`<div class="ay ${m?"m":""}"><span>${t} ﴿${i+1}﴾</span><button data-k="${i}">${m?"✓":"○"}</button></div>`});
 $("a").innerHTML=`<div class="mut">محفوظ ${d} من ${a.length}</div><div class="bar"><i style="width:${a.length?d/a.length*100:0}%"></i></div>`+h;
 $("ay").innerHTML="";a.forEach((_,i)=>$("ay").add(new Option("آية "+(i+1),i)));$("res").innerHTML="";$("ex").textContent=""}
