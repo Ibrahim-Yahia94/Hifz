@@ -20,8 +20,8 @@ button.p{background:var(--ac);color:#fff;border:0}.tabs{display:flex;gap:6px}.ta
 <div class="tabs card"><button data-t="a" class="on">الحفظ</button><button data-t="b">التسميع</button><button data-t="c">المراجعة</button></div>
 <div id="a" class="card"></div>
 <div id="b" class="card" hidden>
-<div class="row"><select id="ay"></select><button id="nx">التالية ›</button><button class="p" id="mic">🎤 سمّع</button></div>
-<p class="mut" id="st">اضغط الميكروفون وابدأ القراءة، أو اكتب/أملِ بميكروفون لوحة المفاتيح في الخانة أدناه.</p>
+<div class="row">من <select id="ay"></select> إلى <select id="ay2"></select></div><div class="row" style="margin-top:8px"><button class="p" id="mic">🎤 سمّع الورد</button></div>
+<p class="mut" id="st">حدد ورد اليوم (من آية إلى آية)، اضغط الميكروفون واقرأ، ثم اضغط إنهاء. أو أملِ بميكروفون لوحة المفاتيح في الخانة أدناه.</p>
 <div id="res"></div><div class="mut" id="ex"></div>
 <textarea id="man" placeholder="ما قرأته" style="width:100%;min-height:56px;margin-top:8px;box-sizing:border-box"></textarea>
 <button id="cmp" style="margin-top:6px">قارن</button></div>
@@ -36,30 +36,42 @@ let M=ld("hm",{}),R=ld("hr",{});const sv=(k,v)=>{try{localStorage.setItem(k,JSON
 N.forEach((n,i)=>$("sr").add(new Option((i+1)+". "+n,i+1)));
 const rw=()=>$("rw").value,sr=()=>+$("sr").value,A=()=>(D[rw()]||{})[sr()]||[],K=i=>rw()+":"+sr()+":"+(i+1);
 async function load(){$("a").textContent="جارٍ التحميل...";
-if(!D[rw()]){try{D[rw()]=await(await fetch("data/data/"+rw()+".json")).json()}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
+if(!D[rw()]){try{let x=await fetch("data/data/"+rw()+".json");if(!x.ok)x=await fetch("data/"+rw()+".json");D[rw()]=await x.json();try{const f=await(await fetch("fix.json")).json();for(const k in f){const[r,sn,an]=k.split(":");if(r===rw()&&D[r][sn])D[r][sn][an-1]=f[k]}}catch(e){}}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
 function draw(){const a=A();let d=0,h="";a.forEach((t,i)=>{const m=M[K(i)];if(m)d++;h+=`<div class="ay ${m?"m":""}"><span>${t} ﴿${i+1}﴾</span><button data-k="${i}">${m?"✓":"○"}</button></div>`});
 $("a").innerHTML=`<div class="mut">محفوظ ${d} من ${a.length}</div><div class="bar"><i style="width:${a.length?d/a.length*100:0}%"></i></div>`+h;
-$("ay").innerHTML="";a.forEach((_,i)=>$("ay").add(new Option("آية "+(i+1),i)));$("res").innerHTML="";$("ex").textContent=""}
+["ay","ay2"].forEach(id=>{$(id).innerHTML="";a.forEach((_,i)=>$(id).add(new Option("آية "+(i+1),i)))});$("ay2").value=Math.min(4,a.length-1);$("res").innerHTML="";$("ex").textContent=""}
 $("a").onclick=e=>{const i=e.target.dataset.k;if(i==null)return;const k=K(+i);if(M[k])delete M[k];else M[k]={d:Date.now(),n:0};sv("hm",M);draw()};
 function tab(t){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));["a","b","c"].forEach(x=>$(x).hidden=x!==t);if(t==="c")due()}
 document.querySelector(".tabs").onclick=e=>e.target.dataset.t&&tab(e.target.dataset.t);
 $("rw").onchange=$("sr").onchange=load;
-$("nx").onclick=()=>{const s=$("ay");if(s.selectedIndex<s.options.length-1){s.selectedIndex++;$("res").innerHTML="";$("man").value=""}};
-const norm=t=>t.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/ة/g,"ه").replace(/[^\u0621-\u064A\s]/g,"").trim().split(/\s+/).filter(Boolean);
-function compare(said){const i=+$("ay").value,E=(A()[i]||"").split(/\s+/),e=E.map(w=>norm(w).join("")),r=norm(said),n=e.length,m=r.length,D2=Array.from({length:n+1},()=>Array(m+1).fill(0));
-for(let a=n-1;a>=0;a--)for(let b=m-1;b>=0;b--)D2[a][b]=e[a]===r[b]?D2[a+1][b+1]+1:Math.max(D2[a+1][b],D2[a][b+1]);
-const ok=Array(n).fill(0),u=Array(m).fill(0);let a=0,b=0;while(a<n&&b<m){if(e[a]===r[b]){ok[a]=1;u[b]=1;a++;b++}else if(D2[a+1][b]>=D2[a][b+1])a++;else b++}
-$("res").innerHTML=E.map((w,j)=>`<span class="w ${ok[j]?"g":"r"}">${w}</span>`).join(" ");
-const x=r.filter((_,j)=>!u[j]),c=ok.filter(Boolean).length,pass=c===n&&!x.length;
-$("ex").textContent=(pass?"✅ قراءة صحيحة":`الصحيح ${c} من ${n}. الأحمر ناقص أو مبدَّل.`)+(x.length?" زائد: "+x.join("، "):"");
-if(pass){const k=K(i),v=M[k];M[k]={d:Date.now(),n:v?v.n+1:0};sv("hm",M)}}
+$("ay").onchange=()=>{if(+$("ay2").value<+$("ay").value)$("ay2").value=$("ay").value};
+const DG=/\u0670/g,MK=new Set(["مالك"]);
+const base=t=>t.replace(/[\u0610-\u061A\u064B-\u065F\u06D6-\u06ED\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/ة/g,"ه").replace(/[^\u0621-\u064A\u0670\s]/g,"");
+const forms=w=>{const b=base(w).replace(/\s+/g,""),f1=b.replace(DG,"ا"),f2=b.replace(DG,"");return f1===f2||MK.has(f1)?[f1]:[f1,f2]};
+const norm=t=>base(t).replace(DG,"ا").trim().split(/\s+/).filter(Boolean);
+function compare(said){const f=+$("ay").value,t=Math.max(f,+$("ay2").value),ar=A();let E=[],ix=[];
+for(let i=f;i<=t;i++)(ar[i]||"").split(/\s+/).forEach(w=>{const z=forms(w)[0];if(z){E.push(w);ix.push(i)}});
+const e=E.map(forms),r=norm(said),n=e.length,m=r.length,D2=Array.from({length:n+1},()=>Array(m+1).fill(0));
+for(let a=n-1;a>=0;a--)for(let b=m-1;b>=0;b--)D2[a][b]=e[a].includes(r[b])?D2[a+1][b+1]+1:Math.max(D2[a+1][b],D2[a][b+1]);
+const ok=Array(n).fill(0),u=Array(m).fill(0);let a=0,b=0;while(a<n&&b<m){if(e[a].includes(r[b])){ok[a]=1;u[b]=1;a++;b++}else if(D2[a+1][b]>=D2[a][b+1])a++;else b++}
+let h="",good=0,tot=t-f+1;for(let i=f;i<=t;i++){const js=ix.map((x,j)=>x===i?j:-1).filter(j=>j>=0),all=js.every(j=>ok[j]);if(all){good++;const k=K(i),v=M[k];M[k]={d:Date.now(),n:v?v.n+1:0}}
+h+='<div class="ay"><span>'+js.map(j=>'<span class="w '+(ok[j]?"g":"r")+'">'+E[j]+'</span>').join(" ")+" ﴿"+(i+1)+"﴾</span><span>"+(all?"✅":"❌")+"</span></div>"}
+sv("hm",M);$("res").innerHTML=h;const x=r.filter((_,j)=>!u[j]);
+$("ex").textContent="الآيات الصحيحة: "+good+" من "+tot+(good===tot&&!x.length?" 🎉 ماشاء الله":". الأحمر ناقص أو مبدَّل.")+(x.length?" كلمات زائدة: "+x.join("، "):"")}
 $("cmp").onclick=()=>compare($("man").value);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-$("mic").onclick=()=>{if(!SR){$("st").textContent="المتصفح لا يدعم التعرف الصوتي. استخدم ميكروفون لوحة المفاتيح في الخانة.";return}
-const r=new SR();r.lang="ar-SA";r.onstart=()=>$("st").textContent="🎙️ أسمعك...";r.onresult=e=>{const t=e.results[0][0].transcript;$("man").value=t;$("st").textContent="سُمع: "+t;compare(t)};r.onerror=e=>$("st").textContent="تعذر التسجيل: "+e.error+". جرّب إملاء لوحة المفاتيح.";r.start()};
+let rec=null;
+$("mic").onclick=()=>{if(rec){rec.stop();return}
+if(!SR){$("st").textContent="المتصفح لا يدعم التعرف الصوتي. استخدم ميكروفون لوحة المفاتيح في الخانة ثم اضغط قارن.";return}
+rec=new SR();rec.lang="ar-SA";rec.continuous=true;rec.interimResults=true;
+rec.onstart=()=>{$("mic").textContent="⏹ إنهاء";$("st").textContent="🎙️ اقرأ وردك ثم اضغط إنهاء"};
+rec.onresult=e=>{let t="";for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";$("man").value=t};
+rec.onerror=e=>{$("st").textContent="تعذر التسجيل: "+e.error+". جرّب إملاء لوحة المفاتيح."};
+rec.onend=()=>{rec=null;$("mic").textContent="🎤 سمّع الورد";const v=$("man").value.trim();if(v){$("st").textContent="تمت المقارنة";compare(v)}};
+rec.start()};
 function due(){const now=Date.now(),L=Object.entries(M).filter(([k,v])=>now-v.d>=IV[Math.min(v.n,4)]*864e5);
 $("du").innerHTML=L.length?`<p>مستحق للمراجعة: ${L.length} آية</p>`+L.slice(0,15).map(([k])=>{const[r,s,a]=k.split(":");return`<button data-g="${k}" style="margin:3px">${N[s-1]} ${a}</button>`}).join(""):"<p>لا مراجعات مستحقة اليوم 🌿</p>"}
-$("du").onclick=async e=>{const g=e.target.dataset.g;if(!g)return;const[r,s,a]=g.split(":");$("rw").value=r;$("sr").value=s;await load();$("ay").value=a-1;tab("b")};
+$("du").onclick=async e=>{const g=e.target.dataset.g;if(!g)return;const[r,s,a]=g.split(":");$("rw").value=r;$("sr").value=s;await load();$("ay").value=a-1;$("ay2").value=a-1;tab("b")};
 if(R.t){$("tm").value=R.t;$("rs").textContent="مفعّل: "+R.t}
 $("rm").onclick=async()=>{R.t=$("tm").value;sv("hr",R);let p="denied";try{p=await Notification.requestPermission()}catch(e){}$("rs").textContent=p==="granted"?"✅ مفعّل: "+R.t:"فعّل الإشعارات من إعدادات المتصفح"};
 setInterval(()=>{if(!R.t||typeof Notification==="undefined"||Notification.permission!=="granted")return;const d=new Date();if(d.toTimeString().slice(0,5)===R.t&&R.d!==d.toDateString()){R.d=d.toDateString();sv("hr",R);new Notification("📖 وقت الحفظ",{body:"وردك ينتظرك، وفيه مراجعات مستحقة."})}},20000);
