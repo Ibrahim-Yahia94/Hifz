@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>رفيق الحفظ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1d6b4f">
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1d6b4f">
 <style>
 :root{--bg:#fbf8f1;--fg:#1f2a24;--card:#fff;--ac:#1d6b4f;--mut:#6b756f;--ok:#1d8a4f;--bad:#c0392b;--bd:#e3ddd0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root{--bg:#141a17;--fg:#ecefe9;--card:#1d2621;--ac:#4fc08d;--mut:#9aa59e;--ok:#4fc08d;--bad:#ff7b6b;--bd:#2d3832}}
@@ -9,9 +9,9 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px system-ui,sans-seri
 h1{font-size:20px;margin:6px 0}.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:10px 0}
 select,button,input,textarea{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
 button.p{background:var(--ac);color:#fff;border:0}.tabs{display:flex;gap:6px}.tabs button{flex:1}.tabs .on{background:var(--ac);color:#fff}
-.ay{font:22px/2.1 "Amiri","Traditional Arabic",serif;border-bottom:1px dashed var(--bd);display:flex;gap:8px;align-items:center;justify-content:space-between}
+.ay{font:22px/2.1 "Amiri Quran","Amiri","Traditional Arabic",serif;border-bottom:1px dashed var(--bd);display:flex;gap:8px;align-items:center;justify-content:space-between}
 .ay.m{color:var(--ok)}.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
-.w{font:24px/2.2 serif;padding:0 3px;border-radius:6px}.w.g{color:var(--ok)}.w.r{color:var(--bad);background:rgba(192,57,43,.12);text-decoration:underline}
+.w{font:24px/2.2 "Amiri Quran","Amiri",serif;padding:0 3px;border-radius:6px}.w.g{color:var(--ok)}.w.r{color:var(--bad);background:rgba(192,57,43,.12);text-decoration:underline}
 .mut{color:var(--mut);font-size:14px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 </style></head><body>
 <h1>📖 رفيق الحفظ</h1>
@@ -36,7 +36,7 @@ let M=ld("hm",{}),R=ld("hr",{});const sv=(k,v)=>{try{localStorage.setItem(k,JSON
 N.forEach((n,i)=>$("sr").add(new Option((i+1)+". "+n,i+1)));
 const rw=()=>$("rw").value,sr=()=>+$("sr").value,A=()=>(D[rw()]||{})[sr()]||[],K=i=>rw()+":"+sr()+":"+(i+1);
 async function load(){$("a").textContent="جارٍ التحميل...";
-if(!D[rw()]){try{let x=await fetch("data/data/"+rw()+".json");if(!x.ok)x=await fetch("data/"+rw()+".json");D[rw()]=await x.json();try{const f=await(await fetch("fix.json")).json();for(const k in f){const[r,sn,an]=k.split(":");if(r===rw()&&D[r][sn])D[r][sn][an-1]=f[k]}}catch(e){}}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
+if(!D[rw()]){try{let x=await fetch("data/data/"+rw()+".json");if(!x.ok)x=await fetch("data/"+rw()+".json");D[rw()]=await x.json();try{const f=await(await fetch("fix.json")).json();for(const k in f){const[r,sn,an]=k.split(":");if(r===rw()&&D[r][sn])D[r][sn][an-1]=f[k]}}catch(e){}for(const k in D[rw()])D[rw()][k]=D[rw()][k].map(t=>t.replace(/\u06E1/g,"\u0652"))}catch(e){$("a").textContent="تعذر تحميل بيانات الرواية (مجلد data).";return}}draw()}
 function draw(){const a=A();let d=0,h="";a.forEach((t,i)=>{const m=M[K(i)];if(m)d++;h+=`<div class="ay ${m?"m":""}"><span>${t} ﴿${i+1}﴾</span><button data-k="${i}">${m?"✓":"○"}</button></div>`});
 $("a").innerHTML=`<div class="mut">محفوظ ${d} من ${a.length}</div><div class="bar"><i style="width:${a.length?d/a.length*100:0}%"></i></div>`+h;
 ["ay","ay2"].forEach(id=>{$(id).innerHTML="";a.forEach((_,i)=>$(id).add(new Option("آية "+(i+1),i)))});$("ay2").value=Math.min(4,a.length-1);$("res").innerHTML="";$("ex").textContent=""}
